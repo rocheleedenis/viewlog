@@ -21,7 +21,6 @@ class LogController extends Controller
      *
      * @return \Illuminate\View\View
      */
-
     public function single(request $request)
     {
     	$file = $request->file('file');
