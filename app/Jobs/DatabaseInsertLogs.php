@@ -30,11 +30,11 @@ class DatabaseInsertLogs implements ShouldQueue
     /**
      * Execute the job.
      *
-     * 
      * @return void
      */
     public function handle()
     {
+        // dd('a');
         $diretorio = dir(storage_path('logs/temp'));
         
         $diretorios = $saida = array();
@@ -71,10 +71,13 @@ class DatabaseInsertLogs implements ShouldQueue
                             LogController::insert($registro);
                         }
                     }
+                    if(strstr($nomeArquivo, '.log'))
+                        unlink(storage_path("logs/temp/$nomeDiretorio/$nomeArquivo"));
+
                 }
                 $diretorio -> close();
+                LogController::delTree(storage_path("logs/temp/$nomeDiretorio"));
             }
         }
-        LogController::delTree(storage_path("logs/temp/"));
     }
 }

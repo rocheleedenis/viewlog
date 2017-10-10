@@ -55,8 +55,12 @@ class LogController extends Controller
      * @return \Illuminate\View\View
      */
     public function storage(){
+        // DatabaseInsertLogs::dispatch()
+                // ->delay(Carbon::now()->addMinutes(15));
         dispatch(new DatabaseInsertLogs());
+        // dd('á');
 
+        
         return view('storage', ["modo" => 'Mostrando logs dos arquivos da pasta temp']);
     }
 
