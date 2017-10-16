@@ -131,7 +131,7 @@ class LogController extends Controller
         $value = str_replace($resultado[0][0], "", $value);
         $registro['channel'] = explode('.', $value)[0];
         $value = str_replace(explode('.', $value)[0].'.', "", $value);
-        $registro['level'] = str_replace(':', '', explode(' ', $value)[0]);
+        $registro['level'] = substr(str_replace(':', '', explode(' ', $value)[0]), 0, 14);
         $value = str_replace($registro['level'].':', "", $value);
 
         // VERIFICAR ESTA PARTE DO CODIGO
