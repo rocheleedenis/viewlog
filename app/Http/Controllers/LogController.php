@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
 use App\Jobs\DatabaseInsertLogs;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use DataTables;
 use App\Log;
 use File;
-
 
 class LogController extends Controller
 {
@@ -23,10 +21,10 @@ class LogController extends Controller
      */
     public function single(request $request)
     {
-    	$file = $request->file('file');
+        $file     = $request->file('file');
         $contents = File::get($file);
-        // "[]" indica o final de cada log
-        $contents = explode("[]", $contents);
+        $contents = explode('[]', $contents);
+
         foreach ($contents as $key => $value) {
             if($value == ' ') unset($contents[$key]); // os logs vazios são retirados
         }        
@@ -37,7 +35,7 @@ class LogController extends Controller
             // $resultado[0][0] = data com []
             // $resultado[1][0] = data sem []
             
-            if(!empty($resultado[1][0])){
+            if( !empty($resultado[1][0]) ){
                 $registro = self::criarSaida($resultado, $value);
             }
             $saida[] = $registro; // envio para p BD
@@ -55,13 +53,9 @@ class LogController extends Controller
      * @return \Illuminate\View\View
      */
     public function storage(){
-        // DatabaseInsertLogs::dispatch()
-                // ->delay(Carbon::now()->addMinutes(15));
         dispatch(new DatabaseInsertLogs());
-        // dd('á');
-
         
-        return view('storage', ["modo" => 'Mostrando logs dos arquivos da pasta temp']);
+        return view('storage', ['modo' => 'Mostrando logs dos arquivos da pasta temp']);
     }
 
     /**
@@ -72,7 +66,7 @@ class LogController extends Controller
      * @return \Illuminate\View\View
      */
     public function data(){
-        return view('storage', ["modo" => 'Exibindo os logs armazenados na base de dados']);
+        return view('storage', ['modo' => 'Exibindo os logs armazenados na base de dados']);
     }
 
     /**
@@ -82,7 +76,12 @@ class LogController extends Controller
     public static function insert($registro){
         $id = DB::table('logs')->insertGetId(
             [
-                'level' => $registro['level'], 'message' => $registro['message'], 'request' => $registro['request'], 'user_id' => $registro['user_id'], 'user_email' => $registro['user_email'], 'accessed' => $registro['accessed']
+                'level'      => $registro['level'],
+                'message'    => $registro['message'],
+                'request'    => $registro['request'],
+                'user_id'    => $registro['user_id'],
+                'user_email' => $registro['user_email'],
+                'accessed'   => $registro['accessed']
             ]
         );
     }
@@ -94,13 +93,13 @@ class LogController extends Controller
     public static function delTree($dir) { 
         $files = array_diff(scandir($dir), array('.','..')); 
         foreach ($files as $file) { 
-            if(is_dir("$dir/$file")){
-                self::delTree("$dir/$file");
+            if(is_dir('$dir/$file')){
+                self::delTree('$dir/$file');
             }else{
-                unlink("$dir/$file");
+                unlink('$dir/$file');
             } 
         }
-        if (storage_path("logs/temp/") != $dir) {
+        if (storage_path('logs/temp/') != $dir) {
             rmdir($dir);
         }
     }
@@ -111,7 +110,7 @@ class LogController extends Controller
      * @return 
      */
     public static function dateToBr($data){
-        $data = explode(' ', $data);
+        $data   = explode(' ', $data);
         $dataBr = explode('-', $data[0]);
 
         return $dataBr[2].'/'.$dataBr[1].'/'.$dataBr[0].' '.$data[1];
@@ -125,30 +124,33 @@ class LogController extends Controller
      */
     public static function criarSaida($resultado, $value){
         $registro['accessed'] = $resultado[1][0];
-        if( strstr($resultado[1][0],":"))
+        if( strstr($resultado[1][0], ':')) {
             $registro['accessed'] = self::dateToBr($resultado[1][0]);
+        }
 
-        $value = str_replace($resultado[0][0], "", $value);
+        $value               = str_replace($resultado[0][0], '', $value);
         $registro['channel'] = explode('.', $value)[0];
-        $value = str_replace(explode('.', $value)[0].'.', "", $value);
-        $registro['level'] = substr(str_replace(':', '', explode(' ', $value)[0]), 0, 14);
-        $value = str_replace($registro['level'].':', "", $value);
+        $value               = str_replace(explode('.', $value)[0].'.', '', $value);
+        $registro['level']   = substr(str_replace(':', '', explode(' ', $value)[0]), 0, 14);
+        $value               = str_replace($registro['level'].':', '', $value);
 
         // VERIFICAR ESTA PARTE DO CODIGO
-        if($registro['level']=='ERROR'){
-            $registro['message'] = $value;
-            $registro['user_id'] = '';
+        if($registro['level']   =='ERROR'){
+            $registro['message']    = $value;
+            $registro['user_id']    = '';
             $registro['user_email'] = '';
-            $registro['request'] = '';
+            $registro['request']    = '';
         }else{
-            $registro['message'] = explode(' ', $value)[1];
-            $value = str_replace($registro['message'], "", $value);
-            $value = json_decode($value, true);
-            $registro['user_id'] = $value['user_id'];
+            $registro['message']    = explode(' ', $value)[1];
+            $value                  = str_replace($registro['message'], '', $value);
+            $value                  = json_decode($value, true);
+            $registro['user_id']    = $value['user_id'];
             $registro['user_email'] = $value['user_email'];
-            $registro['request'] = '';
-            if(isset($value['request']))
+            $registro['request']    = '';
+            
+            if(isset($value['request'])) {
                 $registro['request'] = $value['request'];
+            }
         }
         return $registro;
     }
@@ -159,7 +161,15 @@ class LogController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function getData(Request $request){
-        $logs = Log::select(['level','accessed','user_id','user_email','message', 'request']);
+        $logs = Log::select([
+            'level', 
+            'accessed', 
+            'user_id', 
+            'user_email', 
+            'message', 
+            'request'
+        ]);
+
         if ($request->accessed) {
             $logs->where('accessed', $request->accessed);
         }
@@ -169,5 +179,4 @@ class LogController extends Controller
 
         return Datatables::of($logs)->make(true);
     }
-
 }

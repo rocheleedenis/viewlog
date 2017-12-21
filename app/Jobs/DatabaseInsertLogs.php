@@ -34,13 +34,13 @@ class DatabaseInsertLogs implements ShouldQueue
      */
     public function handle()
     {
-        // dd('a');
-        $diretorio = dir(storage_path('logs/temp'));
+        $diretorio  = dir(storage_path('logs/temp'));
+        $diretorios = $saida = [];
         
-        $diretorios = $saida = array();
         while($nomeDiretorio = $diretorio -> read()){
             if(!strstr($nomeDiretorio, '.')) $diretorios[] = $nomeDiretorio;
         }
+
         $diretorio -> close();
         if(count($diretorios)){
             foreach ($diretorios as $key => $nomeDiretorio) {
@@ -48,14 +48,14 @@ class DatabaseInsertLogs implements ShouldQueue
 
                 while($nomeArquivo = $diretorio -> read()){
                     if(strstr($nomeArquivo, '.log')){
-                        // criar função pra não repetir esta
-                        
                         $contents = File::get(storage_path("logs/temp/$nomeDiretorio/$nomeArquivo"));
 
                         // "[]" separa os logs
                         $contents = explode("[]", $contents);
                         foreach ($contents as $key => $value) {
-                            if($value == ' ') unset($contents[$key]);
+                            if($value == ' ') {
+                                unset($contents[$key]);
+                            }
                         }  
 
                         foreach ($contents as $key => $value) {
@@ -71,11 +71,11 @@ class DatabaseInsertLogs implements ShouldQueue
                             LogController::insert($registro);
                         }
                     }
-                    if(strstr($nomeArquivo, '.log'))
+                    if(strstr($nomeArquivo, '.log')) {
                         unlink(storage_path("logs/temp/$nomeDiretorio/$nomeArquivo"));
-
+                    }
                 }
-                $diretorio -> close();
+                $diretorio->close();
                 LogController::delTree(storage_path("logs/temp/$nomeDiretorio"));
             }
         }

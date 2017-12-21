@@ -18,7 +18,5 @@ Route::get('/', function () {
 Route::post('/single', 'LogController@single');
 Route::get('getdata', 'LogController@getData')->name('getdata');
 
-// Route::get('getData', ['as'=>'get.data','uses'=>'LogController@getData']);
-
 Route::get('/storage', 'LogController@storage');
 Route::get('/data', 'LogController@data')->name('data');
